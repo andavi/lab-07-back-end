@@ -54,7 +54,7 @@ function Daily (day) {
 }
 
 // Search Functions
-function searchToLatLong (query) {
+function searchToLatLong(query) {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${process.env.GEOCODE_API_KEY}`;
   return superagent.get(url)
     .then(geoData => {
@@ -63,9 +63,7 @@ function searchToLatLong (query) {
     })
     .catch(err => console.error(err));
 }
-function searchForWeather (query) {
-  // const weatherJson = require('./data/darksky.json')
-  // return weatherJson.daily.data.map(day => new Daily(day));
+function searchForWeather(query) {
   const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${query.latitude},${query.latitude}`;
   return superagent.get(url)
     .then(weatherData => {
