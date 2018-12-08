@@ -26,12 +26,12 @@ app.get('/weather', getWeather)
 
 // Handlers
 function getLocation (req, res) {
-  const locationData = searchToLatLong(req.query.data || 'lynwood')
-  if (!locationData) {
-    handleError(res)
-  }
-  res.send(locationData)
+  return searchToLatLong(req.query.data || 'lynwood')
+    .then(locationData => {
+      res.send(locationData);
+    });
 }
+
 function getWeather (req, res) {
   const weatherData = searchForWeather(req.query.data)
   if (!weatherData) {
@@ -41,7 +41,7 @@ function getWeather (req, res) {
 }
 
 // Constructors
-function Location (query, location) {
+function Location (location, query) {
   this.search_query = query
   this.formatted_query = location.formatted_address
   this.latitude = location.geometry.location.lat
@@ -54,9 +54,13 @@ function Daily (day) {
 
 // Search Functions
 function searchToLatLong (query) {
-  const geoData = require('./data/geo.json')
-  const location = new Location(query, geoData.results[0])
-  return location
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${process.env.GEOCODE_API_KEY}`;
+  return superagent.get(url)
+    .then(geoData => {
+      const location = new Location(geoData.body.results[0], query);
+      return location;
+    })
+    .catch(err => console.error(err));
 }
 function searchForWeather (query) {
   const weatherJson = require('./data/darksky.json')
