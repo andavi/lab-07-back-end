@@ -39,28 +39,14 @@ function getWeather (req, res) {
   }
   res.send(weatherData)
 }
-// Constructors
-function searchToLatLong (query) {
-  const geoData = require('./data/geo.json')
-  const location = new Location(query, geoData.results[0])
-  return location
-}
 
+// Constructors
 function Location (query, location) {
   this.search_query = query
   this.formatted_query = location.formatted_address
   this.latitude = location.geometry.location.lat
   this.longitude = location.geometry.location.lng
 }
-
-// Get weather data
-
-function searchForWeather (query) {
-  const weatherJson = require('./data/darksky.json')
-  const weather = new Weather(weatherJson)
-  return weather
-}
-
 function Weather (weatherJson) {
   return weatherJson.daily.data.map(day => {
     return {
@@ -68,6 +54,18 @@ function Weather (weatherJson) {
       time: new Date(day.time * 1000).toDateString()
     }
   })
+}
+
+// Search Functions
+function searchToLatLong (query) {
+  const geoData = require('./data/geo.json')
+  const location = new Location(query, geoData.results[0])
+  return location
+}
+function searchForWeather (query) {
+  const weatherJson = require('./data/darksky.json')
+  const weather = new Weather(weatherJson)
+  return weather
 }
 
 // Bad path
@@ -78,5 +76,5 @@ function Weather (weatherJson) {
 // Listen
 app.listen(PORT, () => {
   console.log(`Listening on port: ${PORT}`)
- }
+}
 )
