@@ -47,13 +47,9 @@ function Location (query, location) {
   this.latitude = location.geometry.location.lat
   this.longitude = location.geometry.location.lng
 }
-function Weather (weatherJson) {
-  return weatherJson.daily.data.map(day => {
-    return {
-      forecast: day.summary,
-      time: new Date(day.time * 1000).toDateString()
-    }
-  })
+function Daily (day) {
+  this.forecast = day.summary
+  this.time = new Date(day.time * 1000).toDateString()
 }
 
 // Search Functions
@@ -64,8 +60,7 @@ function searchToLatLong (query) {
 }
 function searchForWeather (query) {
   const weatherJson = require('./data/darksky.json')
-  const weather = new Weather(weatherJson)
-  return weather
+  return weatherJson.daily.data.map(day => new Daily(day));
 }
 
 // Bad path
@@ -76,5 +71,5 @@ function searchForWeather (query) {
 // Listen
 app.listen(PORT, () => {
   console.log(`Listening on port: ${PORT}`)
-}
+ }
 )
