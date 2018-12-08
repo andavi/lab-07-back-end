@@ -33,11 +33,12 @@ function getLocation (req, res) {
 }
 
 function getWeather (req, res) {
-  const weatherData = searchForWeather(req.query.data)
-  if (!weatherData) {
-    handleError(res)
-  }
-  res.send(weatherData)
+  // const weatherData = searchForWeather(req.query.data)
+  // res.send(req.query.data)
+  return searchForWeather(req.query.data)
+    .then(weatherData => {
+      res.send(weatherData);
+    });
 }
 
 // Constructors
@@ -63,8 +64,15 @@ function searchToLatLong (query) {
     .catch(err => console.error(err));
 }
 function searchForWeather (query) {
-  const weatherJson = require('./data/darksky.json')
-  return weatherJson.daily.data.map(day => new Daily(day));
+  // const weatherJson = require('./data/darksky.json')
+  // return weatherJson.daily.data.map(day => new Daily(day));
+  const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${query.latitude},${query.latitude}`;
+  return superagent.get(url)
+    .then(weatherData => {
+      console.log(weatherData.body.daily);
+      return weatherData.body.daily.data.map(day => new Daily(day));
+    })
+    .catch(err => console.error(err));
 }
 
 // Bad path
