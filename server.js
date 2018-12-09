@@ -24,6 +24,7 @@ function handleError (res) {
 app.get('/location', getLocation)
 app.get('/weather', getWeather)
 app.get('/yelp', getYelp);
+app.get('/movies', getMovies);
 
 // Handlers
 function getLocation (req, res) {
@@ -47,6 +48,13 @@ function getYelp(req, res) {
     });
 }
 
+function getMovies(req, res) {
+  return searchMovies(req.query.data)
+    .then(moviesData => {
+      res.send(moviesData);
+    });
+}
+
 // Constructors
 function Location (location, query) {
   this.search_query = query
@@ -66,6 +74,20 @@ function Yelp(business) {
   this.price = business.price;
   this.rating = business.rating;
   this.url = business.url;
+}
+
+function Movie(movie) {
+  this.title = movie.title;
+  this.overview = movie.overview;
+  this.average_votes = movie.vote_average;
+  this.total_votes = movie.vote_count;
+  if (movie.poster_path) {
+    this.image_url = `http://image.tmdb.org/t/p/w200_and_h300_bestv2${movie.poster_path}`;
+  } else {
+    this.image_url = null;
+  }
+  this.popularity = movie.popularity;
+  this.released_on = movie.release_date;
 }
 
 // Search Functions
@@ -95,6 +117,15 @@ function searchYelp(query) {
     .then(yelpData => {
       return yelpData.body.businesses.map(business => new Yelp(business));
     });
+}
+
+function searchMovies(query) {
+  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${query.search_query}`;
+  return superagent.get(url)
+    .then(moviesData => {
+      console.log(moviesData.body);
+      return moviesData.body.results.map(movie => new Movie(movie));
+    })
 }
 
 // Bad path
