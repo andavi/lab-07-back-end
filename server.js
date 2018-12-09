@@ -23,6 +23,7 @@ function handleError (res) {
 // Routes
 app.get('/location', getLocation)
 app.get('/weather', getWeather)
+app.get('/yelp', getYelp);
 
 // Handlers
 function getLocation (req, res) {
@@ -33,11 +34,16 @@ function getLocation (req, res) {
 }
 
 function getWeather (req, res) {
-  // const weatherData = searchForWeather(req.query.data)
-  // res.send(req.query.data)
   return searchForWeather(req.query.data)
     .then(weatherData => {
       res.send(weatherData);
+    });
+}
+
+function getYelp(req, res) {
+  return searchYelp(req.query.data)
+    .then(yelpData => {
+      res.send(yelpData);
     });
 }
 
@@ -48,9 +54,18 @@ function Location (location, query) {
   this.latitude = location.geometry.location.lat
   this.longitude = location.geometry.location.lng
 }
+
 function Daily (day) {
   this.forecast = day.summary
   this.time = new Date(day.time * 1000).toDateString()
+}
+
+function Yelp(business) {
+  this.name = business.name;
+  this.image_url = business.image_url;
+  this.price = business.price;
+  this.rating = business.rating;
+  this.url = business.url;
 }
 
 // Search Functions
@@ -63,14 +78,23 @@ function searchToLatLong(query) {
     })
     .catch(err => console.error(err));
 }
+
 function searchForWeather(query) {
-  const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${query.latitude},${query.latitude}`;
+  const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${query.latitude},${query.longitude}`;
   return superagent.get(url)
     .then(weatherData => {
-      console.log(weatherData.body.daily);
       return weatherData.body.daily.data.map(day => new Daily(day));
     })
     .catch(err => console.error(err));
+}
+
+function searchYelp(query) {
+  const url = `https://api.yelp.com/v3/businesses/search?term=restaurants&latitude=${query.latitude}&longitude=${query.longitude}`;
+  return superagent.get(url)  
+    .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
+    .then(yelpData => {
+      return yelpData.body.businesses.map(business => new Yelp(business));
+    });
 }
 
 // Bad path
